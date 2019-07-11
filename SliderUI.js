@@ -176,7 +176,7 @@ var SliderUI=function(ident){
         var minv=(statevalue.min===undefined )? 0:statevalue.min; 
         var maxv=(statevalue.max===undefined )? 1:statevalue.max; 
         var stepv=(statevalue.step===undefined )? 0.001:statevalue.step; 
-        $("#"+ident+key).slider({ min:minv, max:maxv ,step:stepv,value:v,slide:statevalue.onSlideFunc});
+        $("#"+ident+key).slider({ min:minv, max:maxv ,step:stepv,value:v,slide:statevalue.onSlideFunc,range:"min"});
 
         //Copy the values into our curState
         curState[key]=Object.assign({ },statevalue);
