@@ -27,7 +27,6 @@ $(document).ready(function(){
     myUI.add("1",{text:"foo"});
     myUI.add("2",{text:"man"});
     myUI.add("3",{text:"chu"});
-    myUI.logAlphabetized();
 });
 
 

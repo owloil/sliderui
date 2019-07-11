@@ -89,7 +89,6 @@ var SliderUI=function(ident){
         }
         //Find the first element where alphabetized[i]<=order in RLO.
         var index=alphabetized.findIndex( (a) => a[0].localeCompare(order)<=0);
-        console.log(index+", key="+alphabetized[index][1]);
         if(index===-1){
             index=alphabetized.length-1;
         }
@@ -99,9 +98,6 @@ var SliderUI=function(ident){
     };
 
 
-    this.logAlphabetized=function(){
-        console.log(alphabetized);
-    };
 
     this.clear=function(){
         if(curState){
@@ -171,7 +167,6 @@ var SliderUI=function(ident){
 
         var html='<div class="sliderholder" id="'+ident+key+'div"><span>'+statevalue.text+': </span><div class="minislider" id="'+ident+key+'"></div></div>';
         if(alphabetized.length>0){
-            console.log("Calling $getAlphabetized");
             $getAlphabetized(ordering).after(html);
         } else {
             $("#"+ident).append(html);
