@@ -5,6 +5,7 @@ UI State objects look like the following:
 state={
     slider1:{ 
         text:string,             <-- The text header that appears to the left of the slider. Necessary! All other values are optional and may be left undefined.
+        ordering:string,         <-- Sliders/UI elements will be put in lexicographic ordering.
         min:number,  
         max:number, 
         step:number, 
@@ -48,13 +49,65 @@ var SliderUI=function(ident){
  * */
 
 var SliderUI=function(ident){
-    var curState={ };
+    //List of key:StateObject pairs.
+    var curState={ }; 
+
+    //An array [[lex,key],...] maintained in reverse lexicographic ordering. eg [["z",key],["y",key],...].
+    //Reverse ordering is useful for use with the function findIndex -- if a bunch of elements have the same ordering "zzz", it lets us easily find the last slider on the page.
+    var alphabetized=[]; 
+
+    //Add an element and maintain reverse lexicographic ordering (RLO. "z"<"y"<"x".).
+    var addAlphabetized=function(order,key){ 
+        //Find the first element where alphabetized[i]<order in RLO.
+        var indexToSplice=alphabetized.findIndex( (a) => a[0].localeCompare(order)<=0);
+        if(indexToSplice===-1){
+            //If no such element exists, then we want to push onto the end.
+            alphabetized.push([order,key]);
+        } else {
+            //If such an element exists, then we insert the element just before that.
+            alphabetized.splice(indexToSplice,0,[order,key]);
+        }
+    };
+    var removeAlphabetizedByKey=function(key){
+        var toremove=alphabetized.findIndex( (a) => (a[1]===key) );
+        if(toremove===-1){
+            console.log("Internal error in SliderUI removeAlphabetized. Key "+key+" doesn't exist!");
+        } else {
+            alphabetized.splice(toremove,1);
+        }
+    };
+    var sortAlphabetized=function(){
+        alphabetized.sort( (a,b) => b[0].localeCompare(a[0]) );
+    };
+
+    //To insert a DOM element in the correct position, you should call $getAlphabetized(order).after("")
+    //This will not / cannot work if there are currently zero elements in the DOM!!!
+    var $getAlphabetized=function(order){
+        if(alphabetized.length===0){
+            console.log("Internal error in SliderUI $getAlphabetized. This function cannot be called when length===0.");
+            return;
+        }
+        //Find the first element where alphabetized[i]<=order in RLO.
+        var index=alphabetized.findIndex( (a) => a[0].localeCompare(order)<=0);
+        console.log(index+", key="+alphabetized[index][1]);
+        if(index===-1){
+            index=alphabetized.length-1;
+        }
+        
+        return $("#"+ident+alphabetized[index][1]+"div");
+
+    };
+
+
+    this.logAlphabetized=function(){
+        console.log(alphabetized);
+    };
 
     this.clear=function(){
         if(curState){
-        for(key in curState){
-            $("#"+key).remove();
-        }
+            for(key in curState){
+                $("#"+key).remove();
+            }
         }
     };
     this.setState=function(state){
@@ -93,21 +146,37 @@ var SliderUI=function(ident){
             //Element removed. "Exit" selection.
             $("#"+ident+key+"div").remove();
             delete curState[key];
+            removeAlphabetizedByKey(key)
         } else {
             console.log("Warning: SliderUI.remove called with nonexistent element "+key+".");
         }
     };
 
+
+
     this.add=function(key,statevalue) {
-        if(key===undefined || statevalue===undefined){
+        if(key===undefined || statevalue===undefined) {
             console.log("Error: SliderUI.add called with key or statevalue undefined. Exiting function.");
             return;
-        } else if( curState[key]!==undefined){
+        } else if( curState[key]!==undefined) {
             console.log("Error: SliderUI.add called with already existing key "+key+". Exiting function.");
             return;
         }
-        //Element added. "enter" selection.
-        $("#"+ident).append('<div class="sliderholder" id="'+ident+key+'div"><span>'+statevalue.text+': </span><div class="minislider" id="'+ident+key+'"></div></div>');
+
+        //Default ordering will be "zzz".
+        var ordering=statevalue.ordering;
+        if(ordering===undefined){
+            ordering="zzz";
+        }
+
+        var html='<div class="sliderholder" id="'+ident+key+'div"><span>'+statevalue.text+': </span><div class="minislider" id="'+ident+key+'"></div></div>';
+        if(alphabetized.length>0){
+            console.log("Calling $getAlphabetized");
+            $getAlphabetized(ordering).after(html);
+        } else {
+            $("#"+ident).append(html);
+        }
+
         var v=(statevalue.defaultvalue===undefined )? 0.5:statevalue.defaultvalue; 
         var minv=(statevalue.min===undefined )? 0:statevalue.min; 
         var maxv=(statevalue.max===undefined )? 1:statevalue.max; 
@@ -117,6 +186,9 @@ var SliderUI=function(ident){
         //Copy the values into our curState
         curState[key]=Object.assign({ },statevalue);
         curState[key].update=false;
+        curState[key].ordering=ordering;
+        addAlphabetized(ordering,key);
+
     };
     this.update=function(key,statevalue){
         if(key===undefined){
@@ -125,33 +197,40 @@ var SliderUI=function(ident){
             console.log("Warning: SliderUI.update() called with nonexistent key "+key+". Exiting function.");
         } else {
 
+            //If no statevalue was passed in, we just update the existing element.
             if(statevalue===undefined){
                 statevalue=curState[key];
             }
 
-            var el=$('#'+ident+key);
-            var v=(statevalue.defaultvalue===undefined )? 0.5:statevalue.defaultvalue; 
-            var minv=(statevalue.min===undefined )? 0:statevalue.min; 
-            var maxv=(statevalue.max===undefined )? 1:statevalue.max; 
-            var stepv=(statevalue.step===undefined )? 0.001:statevalue.step; 
+            //If the ordering was not changed, then we update in place. Otherwise we reshuffle the DOM by adding and removing the element.
+            if(statevalue.ordering === curState[key].ordering || statevalue.ordering === undefined) {
+                var el=$('#'+ident+key);
+                var v=(statevalue.defaultvalue===undefined )? 0.5:statevalue.defaultvalue; 
+                var minv=(statevalue.min===undefined )? 0:statevalue.min; 
+                var maxv=(statevalue.max===undefined )? 1:statevalue.max; 
+                var stepv=(statevalue.step===undefined )? 0.001:statevalue.step; 
 
-            //Update text label
-            $('#'+ident+key+"div > span").html(statevalue.text+": ");
+                //Update text label
+                $('#'+ident+key+"div > span").html(statevalue.text+": ");
 
-            //Update slider options min/max/step/value
-            el.slider( "option", "min", minv );
-            el.slider( "option", "max", maxv );
-            el.slider( "option", "step", stepv );
-            el.slider( "option", "value", v );
+                //Update slider options min/max/step/value
+                el.slider( "option", "min", minv );
+                el.slider( "option", "max", maxv );
+                el.slider( "option", "step", stepv );
+                el.slider( "option", "value", v );
 
-            //Update "on slide" function
-            el.on("slide",statevalue.onSlideFunc);
+                //Update "on slide" function
+                el.on("slide",statevalue.onSlideFunc);
 
-            //Update the curState values
-            curState[key]=Object.assign({ },statevalue);
+                //Update the curState values
+                curState[key]=Object.assign({ },statevalue);
+            } else {
+                this.remove(key);
+                this.add(key,statevalue);
+            }
+            //Set the element's update field to false.
             curState[key].update=false;
         }
-
     };
 
     //Return the JQuery object corresponding to the slider.
