@@ -1,0 +1,31 @@
+
+body {
+  background:#445;
+}
+#appcontainer { 
+  background:white;
+  max-width:800px;
+  margin-left:auto;
+  margin-top:50px;
+  margin-right:auto;
+  border-radius:10px;
+  border 2px solid gray;
+  padding:10px
+
+}
+
+#tofill {
+  georgia,'times new roman',times,serif;
+    font-size: 1.125rem;
+    line-height: 1.5625rem;
+}
+.minislider {
+    width:70%;
+    float:right;
+    
+}
+.sliderHolder {
+    padding:5px; 
+    
+}
+
