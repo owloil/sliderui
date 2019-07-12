@@ -80,21 +80,12 @@ var SliderUI=function(ident) {
         alphabetized.sort( (a,b) => b[0].localeCompare(a[0]) );
     };
 
-    //To insert a DOM element in the correct position, you should call $getAlphabetized(order).after("")
-    //This will not / cannot work if there are currently zero elements in the DOM!!!
-    var $getAlphabetized=function(order){
-        if(alphabetized.length===0){
-            console.log("Internal error in SliderUI $getAlphabetized. This function cannot be called when length===0.");
-            return;
-        }
-        //Find the first element where alphabetized[i]<=order in RLO.
-        var index=alphabetized.findIndex( (a) => a[0].localeCompare(order)<=0);
-        if(index===-1){
-            index=alphabetized.length-1;
-        }
-        
-        return $("#"+ident+alphabetized[index][1]+"div");
 
+    //An index of -1 means you should insert the element to the beginning of the DOM
+    //Else, you should insert right after the index with key alphabetized[index][1].
+    var getInsertIndex=function(order){
+        //Find the first element where alphabetized[i]<=order in RLO.
+        return alphabetized.findIndex( (a) => a[0].localeCompare(order)<=0);
     };
 
 
@@ -148,8 +139,6 @@ var SliderUI=function(ident) {
         }
     };
 
-
-
     this.add=function(key,statevalue) {
         if(key===undefined || statevalue===undefined) {
             console.log("Error: SliderUI.add called with key or statevalue undefined. Exiting function.");
@@ -165,12 +154,7 @@ var SliderUI=function(ident) {
             ordering="zzz";
         }
 
-
-
         /* Build html element */
-
-
-
         var divid=ident+key+'div';
         var spanclass="";
         var spantext=statevalue.text+": ";
@@ -192,14 +176,14 @@ var SliderUI=function(ident) {
             <div${sliderclass} id="${sliderid}"></div>
         </div>`;
 
+        /* Insert the HTML at the right element */
+        var index=getInsertIndex(ordering);
+        if(index===-1)
+            $("#"+ident).prepend(html);
+        else
+            $("#"+ident+alphabetized[index][1]+"div").after(html);
 
-
-        if(alphabetized.length>0){
-            $getAlphabetized(ordering).after(html);
-        } else {
-            $("#"+ident).append(html);
-        }
-
+        /* Build the JQuery-UI slider */
         var v=(statevalue.defaultvalue===undefined )? 0.5:statevalue.defaultvalue; 
         var minv=(statevalue.min===undefined )? 0:statevalue.min; 
         var maxv=(statevalue.max===undefined )? 1:statevalue.max; 
