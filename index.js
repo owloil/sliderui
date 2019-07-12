@@ -14,15 +14,15 @@ $(document).ready(function(){
             newsliderlist[""+n]={text:"N="+n}
         }
         myUI.setState(newsliderlist);
+        myUI.logAlphabetized();
     };
 
-    var bsval={min:0,ordering:"a",update:false,max:100,step:1,defaultvalue:0,onSlideFunc:baseupdater, text:"Base"}
+    var bsval={min:0,ordering:"z",update:false,max:100,step:1,defaultvalue:0,onSlideFunc:baseupdater, text:"Base"}
 
 
     myUI.add("baseslider",bsval);
-    myUI.add("newthing",{text:"This is a very long textual description. What will happen?"});
+    myUI.add("newthing",{text:"This is a very long textual description. What will happen", display:"above",hlineabove:true});
+    myUI.add("newthing2",{text:"Hair Color",hlineabove:true});
+    myUI.add("newthing3",{text:"Eyebrow Lennnngth",display:"inline"});
     myUI.add("0",{text:"N=0",ordering:"c"});
 });
-
-
-

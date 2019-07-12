@@ -48,7 +48,7 @@ var SliderUI=function(ident){
 
  * */
 
-var SliderUI=function(ident){
+var SliderUI=function(ident) {
     //List of key:StateObject pairs.
     var curState={ }; 
 
@@ -165,7 +165,35 @@ var SliderUI=function(ident){
             ordering="zzz";
         }
 
-        var html='<div class="sliderholder" id="'+ident+key+'div"><span>'+statevalue.text+': </span><div class="minislider" id="'+ident+key+'"></div></div>';
+
+
+        /* Build html element */
+
+
+
+        var divid=ident+key+'div';
+        var spanclass="";
+        var spantext=statevalue.text+": ";
+        var sliderid=ident+key;
+        var sliderclass=' class="minislider"';
+
+        var hrhtml="";
+        if(statevalue.hlineabove)
+            hrhtml="<hr>";
+
+        if(statevalue.display==="above"){
+            spantext=statevalue.text; // remove the ": ".
+            sliderclass=' class="fullslider"'; //Let the slider span 100% of the width
+            spanclass=' class="sliderabove"'; //Underline the text.
+        }
+
+        var html=`<div class="sliderholder" id="${divid}">${hrhtml}
+            <span${spanclass}>${spantext}</span>
+            <div${sliderclass} id="${sliderid}"></div>
+        </div>`;
+
+
+
         if(alphabetized.length>0){
             $getAlphabetized(ordering).after(html);
         } else {
@@ -244,5 +272,8 @@ var SliderUI=function(ident){
             return 0;
         }
         return $("#"+ident+key).slider("option","value");
+    };
+    this.logAlphabetized=function(){
+        console.log(alphabetized);
     };
 };
