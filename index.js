@@ -22,7 +22,7 @@ $(document).ready(function(){
         myUI.setState(newsliderlist);
     };
 
-    var bsval={min:1,ordering:"a",update:false,max:20,step:1,defaultvalue:0,onSlideFunc:baseupdater, text:"Base"}
+    bsval={min:1,ordering:"a",update:false,max:20,step:1,defaultvalue:0,onSlideFunc:baseupdater, text:"Base"}
 
 
     myUI.add("baseslider",bsval);

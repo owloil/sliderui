@@ -1,52 +1,4 @@
-/* Dumb and slow implementation of a Reactlike or d3like update model. You pass in a list of Slider State objects, and it updates/adds/deletes elements for you as needed. This is a dumb implementation, so it might not be sufficient for future projects. At the very least it doesn't leak memory in my testing :)
- *
-UI State objects look like the following:
 
-state={
-    slider1:{ 
-        text:string,             <-- The text header that appears to the left of the slider. Necessary! All other values are optional and may be left undefined.
-        ordering:string,         <-- Sliders/UI elements will be put in lexicographic ordering.
-        min:number,  
-        max:number, 
-        step:number, 
-        defaultValue:number,     <-- set to this value upon a rebuild() or if it's instantiated.
-        update:bool,             <-- If true and this.setState is called, the corresponding element will be updated and then curState[key] is set to false.
-        slide:function(event,ui) <-- Passed to the jquery-ui .on("slide",fn) event.
-    }, 
-    slider2: { ... },
-    slider3: { ... }
-};
-
-Slider State Objects refer to the values ( {text:"hi"} ) in the above.
-
-var SliderUI=function(ident){
-    var curState={ }
-
-    // Delete all elements of the UI and remove them from the DOM. Clear curState.
-    this.clear=function()
-
-    // Set the state to whatever you want. This updates/deletes the minimal number of elements.
-    // If you have changed state[key]'s fields but have not set state[key].update=true, then the element will not be updated and the changes to its data will not even be stored!!!
-    this.setState=function(state)
-
-    //Removes all UI elements and rebuilds the tree from its model of the document in curState.
-    this.rebuild=function()
-
-    //Returns the available keys in curState
-    this.keys=function()
-
-    //Directly remove/add a specific key. Also updates DOM/yadda yadda.
-    this.remove=function(key)
-    this.add=function(key,statevalue)
-
-    //Return the JQuery object corresponding to the slider.
-    this.$get=function(key)
-
-    //Return the value of the slider with the given key.    
-    this.getValue=function(key)
-}
-
- * */
 
 var SliderUI=function(ident) {
     //List of key:StateObject pairs.
@@ -93,28 +45,31 @@ var SliderUI=function(ident) {
     this.clear=function(){
         if(curState){
             for(key in curState){
-                $("#"+key).remove();
+                this.remove(key);
+
             }
         }
     };
+
     this.setState=function(state){
         /* Values are only considered to have changed/update if the key was changed or removed. */
         for(key in state){
             if( curState[key]===undefined){
-                //Element added. "enter" selection.
+                //Element added. The "enter" selection.
                 this.add(key,state[key]);
             }  else if(state[key].update===true){
-                //Element updated. "update"
+                //Element updated. The "update" selection.
                 this.update(key,state[key]);
             }
         }
         for(key in curState){
             if(state[key]===undefined){
-                //Element removed. "exit" selection.
+                //Element removed. The "exit" selection.
                 this.remove(key);
             }
         }
     };
+
     this.rebuild=function(){
         var tmpCurState=curState;
         //delete all
@@ -122,6 +77,7 @@ var SliderUI=function(ident) {
         //rebuild all
         this.setState(tmpCurState);
     };
+
     //Returns the available keys in curState
     this.keys=function() {
         return Object.keys(curState);
@@ -130,7 +86,6 @@ var SliderUI=function(ident) {
     //Directly remove/add a specific key. Also updates DOM/yadda yadda.
     this.remove=function(key) { 
         if(curState[key]!==undefined){
-            //Element removed. "Exit" selection.
             $("#"+ident+key+"div").remove();
             delete curState[key];
             removeAlphabetizedByKey(key)
@@ -148,18 +103,18 @@ var SliderUI=function(ident) {
             return;
         }
 
-        //Default ordering will be "zzz".
+        //Default ordering will be "zzz". The element gets added to the end of the list.
         var ordering=statevalue.ordering;
         if(ordering===undefined){
             ordering="zzz";
         }
 
-        /* Build html element */
+        /* Build the actual html of the element */
         var divid=ident+key+'div';
         var spanclass="";
         var spantext=statevalue.text+": ";
         var sliderid=ident+key;
-        var sliderclass=' class="minislider"';
+        var sliderclass=' class="sliderui-minislider"';
 
         var hrhtml="";
         if(statevalue.hlineabove)
@@ -167,11 +122,11 @@ var SliderUI=function(ident) {
 
         if(statevalue.display==="above"){
             spantext=statevalue.text; // remove the ": ".
-            sliderclass=' class="fullslider"'; //Let the slider span 100% of the width
-            spanclass=' class="sliderabove"'; //Underline the text.
+            sliderclass=' class="sliderui-fullslider"'; //Let the slider span 100% of the width
+            spanclass=' class="sliderui-sliderabove"'; //Underline the text.
         }
 
-        var html=`<div class="sliderholder" id="${divid}">${hrhtml}
+        var html=`<div class="sliderui-sliderholder" id="${divid}">${hrhtml}
             <span${spanclass}>${spantext}</span>
             <div${sliderclass} id="${sliderid}"></div>
         </div>`;
@@ -190,7 +145,7 @@ var SliderUI=function(ident) {
         var stepv=(statevalue.step===undefined )? 0.001:statevalue.step; 
         $("#"+ident+key).slider({ min:minv, max:maxv ,step:stepv,value:v,slide:statevalue.onSlideFunc,range:"min"});
 
-        //Copy the values into our curState
+        /* Copy the values into our curState */
         curState[key]=Object.assign({ },statevalue);
         curState[key].update=false;
         curState[key].ordering=ordering;
@@ -203,7 +158,6 @@ var SliderUI=function(ident) {
         } else if(curState[key]===undefined){
             console.log("Warning: SliderUI.update() called with nonexistent key "+key+". Exiting function.");
         } else {
-
             //If no statevalue was passed in, we just update the existing element.
             if(statevalue===undefined){
                 statevalue=curState[key];
@@ -257,6 +211,7 @@ var SliderUI=function(ident) {
         }
         return $("#"+ident+key).slider("option","value");
     };
+
     this.logAlphabetized=function(){
         console.log(alphabetized);
     };

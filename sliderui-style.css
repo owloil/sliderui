@@ -1,0 +1,23 @@
+.sliderui-sliderholder .ui-corner-all {
+    border-radius: 0px;
+}
+.sliderui-sliderholder .sliderabove {
+    text-align:center;
+    display:inline-block;
+}
+.sliderui-sliderholder .ui-slider-handle {
+    display:none;
+}
+
+.sliderui-hinislider {
+    min-width:60%;
+    width:auto;
+    float:right;
+}
+.sliderui-sliderholder {
+    padding:5px; 
+    font-family: georgia,'times new roman',times,serif;
+    font-size: 0.9rem;
+    line-height: 1.1625rem;
+    color:#616161;
+}

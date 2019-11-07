@@ -1,0 +1,14 @@
+{
+  "name": "@owloil/sliderui",
+  "version": "1.0.0",
+  "description": "Custom thing for a variable number of UI sliders",
+  "main": "sliderui.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "owloil",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^6.6.0"
+  }
+}
